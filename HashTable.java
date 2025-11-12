@@ -3,9 +3,7 @@ import java.util.LinkedList;
  *  
  * A classe deve gerenciar um array interno e usar 2 funcoes de dispersao.
  *  
- * O tratamento de colisoes utilizado foi endereçamento fechado com arrays.
- * 
- * TODO -> (explicação da escolha do tratamento de colisões)
+ * O tratamento de colisoes utilizado foi endereçamento fechado com LinkedLists.
  * 
  */
 
@@ -48,27 +46,46 @@ public class HashTable<K, V> {
 
     }
     
-    /* TODO:
-     * 1. hash() wrapper
-     * 2. funções hash
-     * 3. put(k, v)
-     * 4. get(k)
-     * 
-     *  **ADCIONANDO STUBS**
-     */
     private int hash(K key) {
-        
-        return 0;
+        int hashCode;
+
+        if (hashFunctionChoice == 1) {
+            hashCode = hashFunction1(key);
+        } else {
+            hashCode = hashFunction2(key);
+        }
+
+        return Math.abs(hashCode) % capacity;
     }
 
+    /* FUNÇÃO DE DISPERSÃO 1: Polinomial (Base 31) - A "BOA"
+     * Justificativa: Padrao da industria (similar ao Java), rapida e
+     * com excelente distribuicao para Strings, pois considera a ORDEM.
+     */
     private int hashFunction1(K key) {
-        //
-        return key.hashCode();
+        String strKey = (String) key;
+        int hash = 0;
+        int P = 31;
+
+        for (int i = 0; i < strKey.length(); i++) {
+            hash = (P * hash + strKey.charAt(i));
+        }
+        return hash;
     }
    
+    /* FUNÇÃO DE DISPERSÃO 2: Soma Simples - A "RUIM"
+     * Justificativa: Implementada para comparação. É uma função de baixa
+     * qualidade que NAO considera a ordem (ex: "ato" e "toa" terao o
+     * mesmo hash), o que deve gerar muitas colisoes.
+     */
     private int hashFunction2(K key) {
-        //
-        return key.hashCode();
+        String strKey = (String) key;
+        int hash = 0;
+
+        for (int i = 0; i < strKey.length(); i++) {
+            hash = hash + strKey.charAt(i);
+        }
+        return hash;
     }
     
     public void put(K key, V value) {
