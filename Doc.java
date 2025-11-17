@@ -16,7 +16,7 @@ public class Doc {
     private HashTable<String, Integer> tabelaFrequencias;
 
     //lista de stopwords
-    private static final String[] STOP_WORDS = {
+    private static final String[] STOPWORDS = {
         "a", "o", "os", "as", "um", "uma", "uns", "umas",
         "de", "do", "da", "dos", "das",
         "em", "no", "na", "nos", "nas",
