@@ -2,7 +2,7 @@ import java.io.IOException;
 
 /**
  * Responsabilidades da classe Doc:
- *  1. Ler um arquivo de texto do disco;
+ *  1. Ler um arquivo de texto;
  *  2. Normalizar o conteúdo (stop words, remover pontuação, tokenizar e etc. que o professor citou);
  *  3. Popular uma HashTable<> com as frequências das palavras.
  */
