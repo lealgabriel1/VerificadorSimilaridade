@@ -138,5 +138,66 @@ public class HashTable<K, V> {
         return size;
     }
     
-    // TODO -> Método de estatísticas de colisão
+    //Método de estatísticas de colisão
+    public String getCollisionStats() {
+    int totalBuckets = capacity;
+    int emptyBuckets = 0;
+    int usedBuckets = 0;
+    int maxBucketSize = 0;
+    int totalCollisions = 0;
+    int totalElements = size;
+
+    //percorre todos os buckets da table
+    for (int i = 0; i < totalBuckets; i++) {
+        LinkedList<Entry<K, V>> bucket = table[i];
+
+        //trata bucket nulo ou vazio como "vazio"
+        if (bucket == null || bucket.isEmpty()) {
+            emptyBuckets++;
+        } else {
+            usedBuckets++;
+            int bucketSize = bucket.size();
+
+            //atualiza o maior tamanho de bucket encontrado
+            if (bucketSize > maxBucketSize) {
+                maxBucketSize = bucketSize;
+            }
+
+            //colisoes aproximadas: para n elementos no mesmo bucket, n - 1 colisões
+            if (bucketSize > 1) {
+                totalCollisions += (bucketSize - 1);
+            }
+        }
+    }
+
+    double loadFactor = (totalBuckets == 0)
+            ? 0.0
+            : (double) totalElements / totalBuckets;
+
+    StringBuilder sb = new StringBuilder();
+    sb.append(" ESTATÍSTICAS DE TABELA HASH \n");
+
+    sb.append("Função de hash utilizada: ");
+    if (hashFunctionChoice == 1) {
+        sb.append("Polinomial (base 31)");
+    } else if (hashFunctionChoice == 2) {
+        sb.append("Soma simples dos caracteres");
+    } else {
+        sb.append("Desconhecida (código: ").append(hashFunctionChoice).append(")");
+    }
+
+    sb.append('\n');
+    sb.append("Capacidade (número de buckets): ").append(totalBuckets).append('\n');
+    sb.append("Elementos armazenados: ").append(totalElements).append('\n');
+    sb.append("Fator de carga (load factor): ")
+        .append(String.format("%.4f", loadFactor)).append('\n');
+    sb.append("Buckets vazios: ").append(emptyBuckets).append('\n');
+    sb.append("Buckets usados: ").append(usedBuckets).append('\n');
+    sb.append("Tamanho máximo de bucket: ").append(maxBucketSize).append('\n');
+    sb.append("Colisões totais (aprox.): ").append(totalCollisions).append('\n');
+
+    return sb.toString();
+    }
+
+
 }
