@@ -22,9 +22,10 @@ public class HashTable<K, V> {
     private LinkedList<Entry<K, V>>[] table; // array de 'LinkedLists' que contem 'Entrys'
     private int size; // Numero total de pares chave-valor armazenados
     private final int capacity; // O tamanho do array 'tabela' (número de buckets)
-    private final int hashFunctionChoice; // 1 para Função 1, 2 para Função 2
+    private final int hashFunctionChoice;
 
     // Construtor
+    @SuppressWarnings("unchecked")
     public HashTable(int initialCapacity, int hashFunctionChoice) {
         if (initialCapacity <= 0) {
             throw new IllegalArgumentException("Capacidade inicial deve ser maior que zero.");
@@ -35,7 +36,7 @@ public class HashTable<K, V> {
         this.table = (LinkedList<Entry<K, V>>[]) new LinkedList[capacity];
 
 
-        /* Essa lógica vem do exemplo de implementação do professor:
+        /* Essa lógica parte do exemplo de implementação do professor:
          * Precisamos inicializar CADA posição do array com uma lista vazia.
          * Sem isso teremos NullPointerException ao tentar adicionar o primeiro item em um bucket.
          */
@@ -175,7 +176,7 @@ public class HashTable<K, V> {
             : (double) totalElements / totalBuckets;
 
     StringBuilder sb = new StringBuilder();
-    sb.append(" ESTATÍSTICAS DE TABELA HASH \n");
+    sb.append("ESTATÍSTICAS DE TABELA HASH \n");
 
     sb.append("Função de hash utilizada: ");
     if (hashFunctionChoice == 1) {

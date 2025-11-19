@@ -41,7 +41,7 @@ public class Documento {
         String[] tokens = tokenizar(textoNormalizado);
         
         // <-- REMOVER DEPOIS
-        System.out.println("[DEBUG] Tokens (com stopwords): " + java.util.Arrays.toString(tokens));
+        System.out.println("Tokens (com stopwords): " + java.util.Arrays.toString(tokens));
         System.out.println("--------------------------------------------------");
         //
 
