@@ -34,11 +34,6 @@ public class Main {
         double limiar = 0.0;
         try {
             limiar = Double.parseDouble(args[1]);
-
-            if(limiar > 1 || limiar < 0) {
-                System.out.println("Erro! Limiar deve ser um valor entre 0 e 1!");
-                return;
-            }
         }
         catch (NumberFormatException ex) {
             System.out.println("Erro! Limiar deve ser um número decimal");
@@ -143,8 +138,9 @@ public class Main {
             return;
         }
 
-        File fileA = new File(configuracao.getArg(3));
-        File fileB = new File(configuracao.getArg(4));
+        File fileA = new File(configuracao.getDiretorio() + "\\" + configuracao.getArg(3));
+        File fileB = new File(configuracao.getDiretorio() + "\\" + configuracao.getArg(4));
+
 
         ArrayList<Documento> documentos = new ArrayList<>(
                 List.of(
