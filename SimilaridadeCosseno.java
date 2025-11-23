@@ -1,4 +1,4 @@
-public class SimilaridadeCosseno implements ISimilaridadeEstrategia {
+ public class SimilaridadeCosseno implements ISimilaridadeEstrategia {
 
     @Override
     public double calcularSimilaridade(Documento docA, Documento docB) {
@@ -14,10 +14,10 @@ public class SimilaridadeCosseno implements ISimilaridadeEstrategia {
         double somatorio = 0.0;
 
         for(String palavra : docA.getTabelaFrequencias().getChaves()) {
-            int freqA = docA.getTabelaFrequencias().get(palavra);
-            int freB = docB.getTabelaFrequencias().get(palavra);
+            Integer freqA = docA.getTabelaFrequencias().get(palavra);
+            Integer freqB = docB.getTabelaFrequencias().get(palavra);
 
-            somatorio += freqA * freB;
+            somatorio += (freqA == null ? 0 : freqA) * (freqB == null ? 0 : freqB);
         }
 
         return somatorio;

@@ -1,11 +1,17 @@
 /*
- * Alunos: ...; Giovanna Borges Coelho - RA10756784; ...
+ * Alunos: ...; Giovanna Borges Coelho - RA10756784; Luis Fernando de Mesquita Pereira - RA10410686
 */
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
 
 public class Main {
 
+    private static final String ARQUIVO_STOP_WORDS = "ptbr.txt";
     public static void main(String[] args) {
 
         // Validação dos argumentos de entrada
@@ -40,11 +46,18 @@ public class Main {
         Configuracao configuracao = new Configuracao(caminho, limiar, args);
 
         try {
+            Set<String> stopWords = carregarStopWords();
+            ComparadorDeDocumentos comparadorDeDocumentos = new ComparadorDeDocumentos(new SimilaridadeCosseno());
+
             switch (modo) {
-                case "lista": executarModoLista(configuracao); break;
-                case "topK": executarModoTopK(configuracao); break;
-                case "busca": executarModoBusca(configuracao); break;
+                case "lista": executarModoLista(configuracao, stopWords, comparadorDeDocumentos); break;
+                case "topK": executarModoTopK(configuracao, stopWords, comparadorDeDocumentos); break;
+                case "busca": executarModoBusca(configuracao, stopWords, comparadorDeDocumentos); break;
             }
+        }
+        catch (IOException ex) {
+            System.out.println("Não foi possível carregar o arquivo com os stopWords!");
+            ex.printStackTrace();
         }
         catch (Exception ex) {
             System.out.println("Ocorreu um erro inesperado!");
@@ -52,11 +65,52 @@ public class Main {
         }
     }
 
-    public static void executarModoLista(Configuracao configuracao) {
+    private static Set<String> carregarStopWords() throws IOException {
+        List<String> linhas = Files.readAllLines(Paths.get(ARQUIVO_STOP_WORDS));
+        Set<String> stopWords = new HashSet<>();
 
+        for (String linha : linhas) {
+            String palavraLimpa = linha.trim().toLowerCase();
+            if (!palavraLimpa.isEmpty()) {
+                stopWords.add(palavraLimpa);
+            }
+        }
+
+        return stopWords;
     }
 
-    public static void executarModoTopK(Configuracao configuracao) {
+    private static boolean verificarArquivoValido(File arquivo) {
+        return arquivo.isFile() && arquivo.getName().endsWith(".txt");
+    }
+
+    public static ArrayList<Documento> recuperarArquivosETransformarParaDocumento(Configuracao configuracao) {
+        ArrayList<Documento> documentos = new ArrayList<>();
+        File[] arquivos = configuracao.getDiretorio().listFiles();
+
+        if(arquivos != null) {
+            for(File arquivo : arquivos) {
+                if(verificarArquivoValido(arquivo)){
+                    documentos.add(new Documento(arquivo.getName(), arquivo.getPath()));
+                }
+            }
+        }
+
+        return documentos;
+    }
+
+    public static void executarModoLista(Configuracao configuracao, Set<String> stopWords, ComparadorDeDocumentos comparadorDeDocumentos) {
+
+        ArrayList<Documento> documentos = recuperarArquivosETransformarParaDocumento(configuracao);
+
+        if(documentos.size() > 0){
+            processarDocumentos(documentos, stopWords, configuracao.getLimiar(), comparadorDeDocumentos);
+        }
+        else {
+            System.out.println("Não foi possível completar a leitura dos arquivos contidos no diretório: " + configuracao.getDiretorio().getPath());
+        }
+    }
+
+    public static void executarModoTopK(Configuracao configuracao, Set<String> stopWords, ComparadorDeDocumentos comparadorDeDocumentos) {
         int topK = 0;
 
         try {
@@ -67,20 +121,104 @@ public class Main {
             return;
         }
 
+        ArrayList<Documento> documentos = recuperarArquivosETransformarParaDocumento(configuracao);
 
+        if(documentos.size() > 0) {
+            processarDocumentos(documentos, stopWords, configuracao.getLimiar(), comparadorDeDocumentos);
+        }
+        else {
+            System.out.println("Não foi possível completar a leitura dos arquivos contidos no diretório: " + configuracao.getDiretorio().getPath());
+        }
     }
 
-    public static void executarModoBusca(Configuracao configuracao) {
+    public static void executarModoBusca(Configuracao configuracao, Set<String> stopWords, ComparadorDeDocumentos comparadorDeDocumentos) {
 
         if (configuracao.getArgs().length < 5) {
             System.out.println("Erro: Modo busca precisa de dois arquivos.");
             return;
         }
 
-        String documentoA = configuracao.getArg(3);
-        String documentoB = configuracao.getArg(4);
+        File fileA = new File(configuracao.getArg(3));
+        File fileB = new File(configuracao.getArg(4));
 
+        ArrayList<Documento> documentos = new ArrayList<>(
+                List.of(
+                        new Documento(fileA.getName(), fileA.getPath()),
+                        new Documento(fileB.getName(), fileB.getPath())
+                )
+        );
+
+        processarDocumentos(documentos, stopWords, configuracao.getLimiar(), comparadorDeDocumentos);
     }
 
+    public static void processarDocumentos(ArrayList<Documento> documentos, Set<String> stopWords, double limiar, ComparadorDeDocumentos comparadorDeDocumentos)
+    {
+        try {
+            for(Documento documento : documentos)
+                documento.processarArquivo(stopWords);
 
+            ArrayList<ArrayList<Documento>> paresDocumentos = criarParesDocumentos(documentos);
+
+            AVLTree tree = new AVLTree();
+
+            for(ArrayList<Documento> par : paresDocumentos) {
+                Documento doc1 = par.get(0);
+                Documento doc2 = par.get(1);
+
+                double similaridade = comparadorDeDocumentos.calcularSimilaridade(doc1, doc2);
+
+                tree.inserir(similaridade, new Resultado(doc1.getNome(), doc2.getNome(), similaridade));
+            }
+
+            processarResultados(documentos.size(), paresDocumentos.size(), limiar, tree);
+        }
+        catch (Exception ex) {
+            System.out.println("Ocorreu um erro inesperado! Não foi possível processar os documentos!");
+        }
+    }
+
+    public static ArrayList<ArrayList<Documento>> criarParesDocumentos(ArrayList<Documento> documentos) {
+        ArrayList<ArrayList<Documento>> pares = new ArrayList<>();
+
+        for(int i = 0; i < documentos.size(); i++) {
+
+            for(int j = i + 1; j < documentos.size(); j++) {
+                pares.add(
+                        new ArrayList<>(List.of(documentos.get(i), documentos.get(j)))
+                );
+            }
+        }
+
+        return pares;
+    }
+
+    public static void processarResultados(int totalDocs, int totalParesDocs, double similaridade, AVLTree arvore) {
+
+        String s = String.format("=== VERIFICADOR DE SIMILARIDADE DE TEXTOS ===\n" +
+                                "Total de documentos processados: %d\n" +
+                                "Total de pares comparados: %d\n" +
+                                "Funcão hash utilizada: hashMultiplicativo\n" +
+                                "Métrica de similaridade: Cosseno\n", totalDocs, totalParesDocs);
+
+        System.out.println(s);
+        System.out.println("Pares com similaridade >= " + similaridade);
+        System.out.println("---------------------------------");
+        arvore.exibirMaiores(similaridade);
+        System.out.println();
+
+        System.out.println("Pares com menor similaridade");
+        System.out.println("---------------------------------");
+        arvore.exibirMenores(similaridade);
+    }
+
+    public static void gerarArquivoSaida(String resultado) {
+        Path caminho =  Path.of("resultado.txt");
+
+        try {
+             Files.writeString(caminho, resultado);
+             System.out.println("Arquivo de saída gerado com sucesso!");
+        }catch (IOException ex) {
+            ex.printStackTrace();
+        }
+    }
 }

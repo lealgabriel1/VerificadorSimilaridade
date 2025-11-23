@@ -1,49 +1,52 @@
 import java.io.IOException;
+import java.lang.annotation.Target;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set; // Set para as stop words
 import java.text.Normalizer;
 
 public class Documento {
-    private final String nomeArquivo;
-    private final HashTable<String, Integer> tabelaFrequencias;
+    private String nome;
+    private String caminho;
+    private HashTable<String, Integer> tabelaFrequencias;
 
-    public Documento(String caminhoArquivo, Set<String> stopWords, int hashFunctionChoice, int capacidadeHash) throws IOException {
-        
-        // 1. Extrai e guarda o nome do arquivo
-        this.nomeArquivo = Paths.get(caminhoArquivo).getFileName().toString();
-        
-        // 2. Inicializa sua própria HashTable
-        this.tabelaFrequencias = new HashTable<>(capacidadeHash, hashFunctionChoice);
+    private static final String ARQUIVO_STOP_WORDS = "ptbr.txt";
 
-        // 3. Inicia o processo de leitura e contagem
-        processarArquivo(caminhoArquivo, stopWords);
+    public String getCaminho() {
+        return caminho;
+    }
+
+    public String getNome() {
+        return nome;
+    }
+
+    public HashTable<String, Integer> getTabelaFrequencias() {
+        return tabelaFrequencias;
+    }
+
+    public Documento(String nome, String caminho) {
+        this.nome = nome;
+        this.caminho = caminho;
     }
 
     /**
      * Metodo principal
      * Define a "trilha" de processamento
      */
-    private void processarArquivo(String caminhoArquivo, Set<String> stopWords) throws IOException {
+    public void processarArquivo(Set<String> stopWords) throws IOException {
         // Passo 1: Ler
-        String textoBruto = lerTextoBruto(caminhoArquivo);
+        String textoBruto = lerTextoBruto(caminho);
 
         // Passo 2: Limpar
         String textoNormalizado = normalizar(textoBruto);
-        
-        // <-- REMOVER DEPOIS
-        System.out.println("--------------------------------------------------");
-        System.out.println("Texto Normalizado: " + textoNormalizado);
-        System.out.println("--------------------------------------------------");
-        //
-        
+
+
         // Passo 3: Quebrar
         String[] tokens = tokenizar(textoNormalizado);
-        
-        // <-- REMOVER DEPOIS
-        System.out.println("Tokens (com stopwords): " + java.util.Arrays.toString(tokens));
-        System.out.println("--------------------------------------------------");
-        //
+
+        tabelaFrequencias = new HashTable<>(tokens.length, 1);
 
         // Passo 4: Contar
         popularTabela(tokens, stopWords);
@@ -82,7 +85,7 @@ public class Documento {
      * PASSO 3: Tokenizacao
      */
     private String[] tokenizar(String textoNormalizado) {
-        return textoNormalizado.split("\\s+");
+        return textoNormalizado.trim().split("\\s+");
     }
 
     /**
@@ -111,13 +114,5 @@ public class Documento {
                 tabelaFrequencias.put(token, frequenciaAtual + 1);
             }
         }
-    }
-
-    public String getNomeArquivo() {
-        return nomeArquivo;
-    }
-
-    public HashTable<String, Integer> getTabelaFrequencias() {
-        return tabelaFrequencias;
     }
 }

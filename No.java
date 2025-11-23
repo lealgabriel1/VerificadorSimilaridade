@@ -18,7 +18,7 @@ class No {
     }
 
     public ArrayList<Resultado> getPares() {
-        return pares;
+        return this.pares;
     }
 
     public void adicionarPar(Resultado res) {

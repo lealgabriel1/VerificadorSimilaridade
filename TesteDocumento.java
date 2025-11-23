@@ -10,7 +10,7 @@ public class TesteDocumento {
     public static void main(String[] args) {
         System.out.println("=== INICIO ===");
         String caminhoStopWords = "ptbr.txt";
-        String caminhoDocumento = "documentos/doc.txt";
+        String caminhoDocumento = "documentos/doc1.txt";
 
         try {
             System.out.println("Lendo stop words de: " + caminhoStopWords);
@@ -19,12 +19,12 @@ public class TesteDocumento {
 
             System.out.println("Lendo e processando documento: " + caminhoDocumento);
             
-            Documento doc = new Documento(caminhoDocumento, stopWords, 2, 5003);
+            Documento doc = new Documento(caminhoDocumento, "");
 
             HashTable<String, Integer> tabela = doc.getTabelaFrequencias();
             
             System.out.println("\n--- Relatório de Processamento ---");
-            System.out.println("Arquivo processado: " + doc.getNomeArquivo());
+            System.out.println("Arquivo processado: " );
             System.out.println("Total de palavras únicas (vocabulário): " + tabela.getSize());
 
             String palavraTeste = "computador"; 

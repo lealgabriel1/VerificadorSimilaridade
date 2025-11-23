@@ -1,0 +1,3 @@
+A linguagem de programação Java é orientada a objetos, sendo segura e robusta.
+Para rodar na máquina virtual, o código vira bytecode pelo compilador.
+Muitos desenvolvedores usam Java em sistemas corporativos.

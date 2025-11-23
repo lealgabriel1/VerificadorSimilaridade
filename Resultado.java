@@ -10,9 +10,9 @@
 public class Resultado {
     
     // Atributos
-    private final String doc1;
-    private final String doc2;
-    private final double similaridade;
+    private String doc1;
+    private String doc2;
+    private double similaridade;
 
     // Construtor
     public Resultado(String doc1, String doc2, double similaridade) {

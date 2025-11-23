@@ -1,0 +1,3 @@
+Java é uma linguagem de programação orientada a objetos robusta e segura.
+O compilador transforma o código fonte em bytecode para a máquina virtual.
+Desenvolvedores utilizam Java para criar sistemas corporativos complexos.

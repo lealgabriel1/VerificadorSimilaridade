@@ -31,7 +31,7 @@ public class AVLTree extends BST {
 
         // Esquerda pesada
         if (fb > 1) {
-            if (resultado.getSimilaridade() < no.getEsquerda().getChave()) {
+            if (getFatorBalanceamento(no.getEsquerda()) >= 0) {
                 return rotacaoDireita(no);
             } else {
                 no.setEsquerda(rotacaoEsquerda(no.getEsquerda()));
@@ -41,7 +41,7 @@ public class AVLTree extends BST {
 
         // Direita Pesada
         if (fb < -1) {
-            if (resultado.getSimilaridade() > no.getDireita().getChave()) {
+            if (getFatorBalanceamento(no.getDireita()) <= 0) {
                 return rotacaoEsquerda(no);
             } else {
                 no.setDireita(rotacaoDireita(no.getDireita()));
@@ -79,4 +79,54 @@ public class AVLTree extends BST {
 
         return y;
     }
+
+    public void exibirMaiores(double similaridade) {
+        this.exibirMaioresRecursivo(this.raiz, similaridade);
+    }
+
+    private void exibirMaioresRecursivo(No no, double similaridade) {
+        if(no == null) {
+            return;
+        }
+
+        if(no.getChave() >= similaridade) {
+
+            exibirMaioresRecursivo(no.getDireita(), similaridade);
+            imprimirPares(no);
+            exibirMaioresRecursivo(no.getEsquerda(), similaridade);
+        }
+        else {
+            exibirMaioresRecursivo(no.getDireita(), similaridade);
+        }
+    }
+
+    public void exibirMenores(double similaridade) {
+        exibirMenoresRecursivo(this.raiz, similaridade);
+    }
+
+
+    private void exibirMenoresRecursivo(No no, double similaridade) {
+        if(no == null) {
+            return;
+        }
+
+        if(no.getChave() < similaridade) {
+            exibirMenoresRecursivo(no.getDireita(), similaridade);
+            imprimirPares(no);
+            exibirMenoresRecursivo(no.getEsquerda(), similaridade);
+        }
+        else {
+            exibirMaioresRecursivo(no.getEsquerda(), similaridade);
+        }
+    }
+
+    private void imprimirPares(No no) {
+        ArrayList<Resultado> pares = no.getPares();
+
+        for (Resultado par : pares) {
+            String s = String.format("%s = %.2f", par.toString(), no.getChave());
+            System.out.println(s);
+        }
+    }
+
 }

@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+
 public class BST {
     public No getRaiz() {
         return raiz;
@@ -24,9 +26,31 @@ public class BST {
         }
         else if(resultado.getSimilaridade() > no.getChave()) {
             No novoNo = inserirRecursivo(no.getDireita(), resultado);
-            no.setDireita(novoNo.getEsquerda());
+            no.setDireita(novoNo);
+        }
+        else {
+            no.adicionarPar(resultado);
         }
 
         return no;
+    }
+
+    public void emOrdemReverso() {
+        emOrdemReversoRecursivo(this.raiz);
+    }
+
+    private void emOrdemReversoRecursivo(No no) {
+        if (no != null) {
+            emOrdemReversoRecursivo(no.getDireita());
+
+            ArrayList<Resultado> pares = no.getPares();
+
+            for (Resultado par : pares) {
+                String s = String.format("%s = %.2f", par.toString(), no.getChave());
+                System.out.println(s);
+            }
+
+            emOrdemReversoRecursivo(no.getEsquerda());
+        }
     }
 }
