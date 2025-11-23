@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.LinkedList;
 /* Implementacao manual de uma hash table generica.
  *  
@@ -9,7 +10,7 @@ import java.util.LinkedList;
 
 public class HashTable<K, V> {
 
-    private static class Entry<K, V> {
+    public static class Entry<K, V> {
         final K key;
         V value;
         
@@ -200,5 +201,18 @@ public class HashTable<K, V> {
     return sb.toString();
     }
 
+    public ArrayList<K> getChaves() {
+        ArrayList<K> chaves = new ArrayList<>();
 
+        for (LinkedList<Entry<K, V>> entries : table) {
+            if (entries != null) {
+                for (Entry<K, V> doc : entries) {
+                    K chave = doc.key;
+                    chaves.add(chave);
+                }
+            }
+        }
+
+        return chaves;
+    }
 }
