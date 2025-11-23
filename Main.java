@@ -34,6 +34,11 @@ public class Main {
         double limiar = 0.0;
         try {
             limiar = Double.parseDouble(args[1]);
+
+            if(limiar > 1 || limiar < 0) {
+                System.out.println("Erro! Limiar deve ser um valor entre 0 e 1!");
+                return;
+            }
         }
         catch (NumberFormatException ex) {
             System.out.println("Erro! Limiar deve ser um número decimal");
@@ -103,7 +108,7 @@ public class Main {
         ArrayList<Documento> documentos = recuperarArquivosETransformarParaDocumento(configuracao);
 
         if(documentos.size() > 0){
-            processarDocumentos(documentos, stopWords, configuracao.getLimiar(), comparadorDeDocumentos);
+            processarDocumentos(documentos, stopWords, comparadorDeDocumentos, null, configuracao.getLimiar());
         }
         else {
             System.out.println("Não foi possível completar a leitura dos arquivos contidos no diretório: " + configuracao.getDiretorio().getPath());
@@ -124,7 +129,7 @@ public class Main {
         ArrayList<Documento> documentos = recuperarArquivosETransformarParaDocumento(configuracao);
 
         if(documentos.size() > 0) {
-            processarDocumentos(documentos, stopWords, configuracao.getLimiar(), comparadorDeDocumentos);
+            processarDocumentos(documentos, stopWords, comparadorDeDocumentos, topK, configuracao.getLimiar());
         }
         else {
             System.out.println("Não foi possível completar a leitura dos arquivos contidos no diretório: " + configuracao.getDiretorio().getPath());
@@ -148,10 +153,11 @@ public class Main {
                 )
         );
 
-        processarDocumentos(documentos, stopWords, configuracao.getLimiar(), comparadorDeDocumentos);
+        processarDocumentos(documentos, stopWords, comparadorDeDocumentos, null, configuracao.getLimiar());
     }
 
-    public static void processarDocumentos(ArrayList<Documento> documentos, Set<String> stopWords, double limiar, ComparadorDeDocumentos comparadorDeDocumentos)
+    public static void processarDocumentos(ArrayList<Documento> documentos, Set<String> stopWords,
+                                           ComparadorDeDocumentos comparador, Integer topK, double limiar)
     {
         try {
             for(Documento documento : documentos)
@@ -165,15 +171,15 @@ public class Main {
                 Documento doc1 = par.get(0);
                 Documento doc2 = par.get(1);
 
-                double similaridade = comparadorDeDocumentos.calcularSimilaridade(doc1, doc2);
+                double similaridade = comparador.calcularSimilaridade(doc1, doc2);
 
                 tree.inserir(similaridade, new Resultado(doc1.getNome(), doc2.getNome(), similaridade));
             }
 
-            processarResultados(documentos.size(), paresDocumentos.size(), limiar, tree);
+            processarResultados(documentos.size(), paresDocumentos.size(), limiar, tree, topK);
         }
         catch (Exception ex) {
-            System.out.println("Ocorreu um erro inesperado! Não foi possível processar os documentos!");
+            throw  new RuntimeException("Ocorreu um erro inesperado! Não foi possível processar os documentos!");
         }
     }
 
@@ -192,23 +198,28 @@ public class Main {
         return pares;
     }
 
-    public static void processarResultados(int totalDocs, int totalParesDocs, double similaridade, AVLTree arvore) {
+    public static void processarResultados(int totalDocs, int totalParesDocs, double similaridade, AVLTree arvore, Integer topK) {
+
+        ArrayList<String> paresMaiores = arvore.exibirMaiores(similaridade, topK);
+        ArrayList<String> paresMenores = arvore.exibirMenores(similaridade);
 
         String s = String.format("=== VERIFICADOR DE SIMILARIDADE DE TEXTOS ===\n" +
                                 "Total de documentos processados: %d\n" +
                                 "Total de pares comparados: %d\n" +
-                                "Funcão hash utilizada: hashMultiplicativo\n" +
-                                "Métrica de similaridade: Cosseno\n", totalDocs, totalParesDocs);
+                                "Função hash utilizada: hashMultiplicativo\n" +
+                                "Métrica de similaridade: Cosseno\n\n" +
+                                "Pares com similaridade >= %.2f\n" +
+                                "---------------------------------\n" +
+                                "%s\n" +
+                                "\nPares com menor similaridade\n" +
+                                "---------------------------------\n" +
+                                "%s", totalDocs, totalParesDocs, similaridade,
+                                String.join("\n", paresMaiores),
+                                String.join("\n", paresMenores));
 
         System.out.println(s);
-        System.out.println("Pares com similaridade >= " + similaridade);
-        System.out.println("---------------------------------");
-        arvore.exibirMaiores(similaridade);
-        System.out.println();
+        gerarArquivoSaida(s);
 
-        System.out.println("Pares com menor similaridade");
-        System.out.println("---------------------------------");
-        arvore.exibirMenores(similaridade);
     }
 
     public static void gerarArquivoSaida(String resultado) {
@@ -216,7 +227,7 @@ public class Main {
 
         try {
              Files.writeString(caminho, resultado);
-             System.out.println("Arquivo de saída gerado com sucesso!");
+             System.out.println("\n\nArquivo de saída gerado com sucesso!");
         }catch (IOException ex) {
             ex.printStackTrace();
         }

@@ -13,7 +13,7 @@ public class AVLTree extends BST {
 
     // Retorna a altura do nó
     private int altura(No N) {
-        if(N == null)
+        if (N == null)
             return 0;
 
         return N.getAltura();
@@ -21,7 +21,7 @@ public class AVLTree extends BST {
 
     // Calcula o fator de balanceamento do nó
     private int getFatorBalanceamento(No N) {
-        if(N == null) return 0;
+        if (N == null) return 0;
 
         return altura(N.getEsquerda()) - altura(N.getDireita());
     }
@@ -80,53 +80,62 @@ public class AVLTree extends BST {
         return y;
     }
 
-    public void exibirMaiores(double similaridade) {
-        this.exibirMaioresRecursivo(this.raiz, similaridade);
+    public ArrayList<String> exibirMaiores(double similaridade, Integer topK) {
+        int contador = 0;
+
+        ArrayList<String> pares = new ArrayList<>();
+        this.exibirMaioresRecursivo(this.raiz, similaridade, contador, topK, pares);
+
+        return pares;
     }
 
-    private void exibirMaioresRecursivo(No no, double similaridade) {
-        if(no == null) {
+    private void exibirMaioresRecursivo(No no, double similaridade, int contador, Integer topK, ArrayList<String> pares) {
+        if (no == null) {
             return;
         }
 
-        if(no.getChave() >= similaridade) {
+        if (no.getChave() >= similaridade && (topK == null || topK > 0)) {
+            contador++;
 
-            exibirMaioresRecursivo(no.getDireita(), similaridade);
-            imprimirPares(no);
-            exibirMaioresRecursivo(no.getEsquerda(), similaridade);
-        }
-        else {
-            exibirMaioresRecursivo(no.getDireita(), similaridade);
+            if (topK != null)
+                topK--;
+
+            exibirMaioresRecursivo(no.getDireita(), similaridade, contador, topK, pares);
+            pares.addAll(recuperarPares(no));
+            exibirMaioresRecursivo(no.getEsquerda(), similaridade, contador, topK, pares);
+        } else {
+            exibirMaioresRecursivo(no.getDireita(), similaridade, contador, topK, pares);
         }
     }
 
-    public void exibirMenores(double similaridade) {
-        exibirMenoresRecursivo(this.raiz, similaridade);
+    public ArrayList<String> exibirMenores(double similaridade) {
+        ArrayList<String> pares = new ArrayList<>();
+        exibirMenoresRecursivo(this.raiz, similaridade, pares);
+        return pares;
     }
 
 
-    private void exibirMenoresRecursivo(No no, double similaridade) {
-        if(no == null) {
+    private void exibirMenoresRecursivo(No no, double similaridade, ArrayList<String> pares) {
+        if (no == null) {
             return;
         }
 
-        if(no.getChave() < similaridade) {
-            exibirMenoresRecursivo(no.getDireita(), similaridade);
-            imprimirPares(no);
-            exibirMenoresRecursivo(no.getEsquerda(), similaridade);
-        }
-        else {
-            exibirMaioresRecursivo(no.getEsquerda(), similaridade);
-        }
-    }
-
-    private void imprimirPares(No no) {
-        ArrayList<Resultado> pares = no.getPares();
-
-        for (Resultado par : pares) {
-            String s = String.format("%s = %.2f", par.toString(), no.getChave());
-            System.out.println(s);
+        if (no.getChave() < similaridade) {
+            exibirMenoresRecursivo(no.getDireita(), similaridade, pares);
+            pares.addAll(recuperarPares(no));
+            exibirMenoresRecursivo(no.getEsquerda(), similaridade, pares);
+        } else {
+            exibirMenoresRecursivo(no.getEsquerda(), similaridade, pares);
         }
     }
 
+    private ArrayList<String> recuperarPares(No no) {
+        ArrayList<String> paresFormados = new ArrayList<String>();
+        for (Resultado par : no.getPares()) {
+            paresFormados.add(par.toString());
+        }
+
+        return paresFormados;
+    }
 }
+
