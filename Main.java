@@ -215,7 +215,6 @@ public class Main {
 
         System.out.println(s);
         gerarArquivoSaida(s);
-
     }
 
     public static void gerarArquivoSaida(String resultado) {
