@@ -2,16 +2,16 @@ import java.util.ArrayList;
 
 public class AVLTree extends BST {
 
-    // Variável global da árvore para contar o total de rotacões feitas
-    private int totalRotacoes = 0;
+    // Variável global da árvore para contar o total de rotacões simples e duplas feitas
+    private int totalRotacoesSimples = 0;
+    private int totalRotacoesDuplas = 0;
 
-    public int getTotalRotacoes() {
-        return this.totalRotacoes;
+    public int getTotalRotacoesSimples() {
+        return this.totalRotacoesSimples;
     }
 
-    // Método para resetar os valor do total de rotações
-    public void resetTotalRotacoes() {
-        this.totalRotacoes = 0;
+    public  int getTotalRotacoesDuplas() {
+        return this.totalRotacoesDuplas;
     }
 
     @Override
@@ -45,25 +45,30 @@ public class AVLTree extends BST {
 
         // Esquerda pesada
         if (fb > 1) {
-
-            // Caso Esquerda-Direita (LR) -> Rotação dupla
-            if (getFatorBalanceamento(no.getEsquerda()) < 0) {
+            if (getFatorBalanceamento(no.getEsquerda()) >= 0) {
+                // Rotação Simples (LL)
+                totalRotacoesSimples++;
+                return rotacaoDireita(no);
+            } else {
+                // Rotação Dupla (LR)
+                totalRotacoesDuplas++;
                 no.setEsquerda(rotacaoEsquerda(no.getEsquerda()));
+                return rotacaoDireita(no);
             }
-
-            // Caso Esquerda-Esquerda (LL)
-            return rotacaoDireita(no);
         }
 
         // Direita Pesada
         if (fb < -1) {
-            // Caso Direita-Esquerda (RL) -> Rotação Dupla
-            if (getFatorBalanceamento(no.getDireita()) > 0) {
+            if (getFatorBalanceamento(no.getDireita()) <= 0) {
+                // Rotação Simples (RR)
+                totalRotacoesSimples++;
+                return rotacaoEsquerda(no);
+            } else {
+                // Rotação Dupla (RL)
+                totalRotacoesDuplas++;
                 no.setDireita(rotacaoDireita(no.getDireita()));
+                return rotacaoEsquerda(no);
             }
-
-            // Caso Direita-Direita (RR) -> Rotação Simples
-            return rotacaoEsquerda(no);
         }
 
         return no;
@@ -72,8 +77,6 @@ public class AVLTree extends BST {
 
     // Realiza rotação à direita (simples)
     private No rotacaoDireita(No N) {
-        this.totalRotacoes++; // Incrementa o total de rotações feitas
-
         No x = N.getEsquerda();
         No y = x.getDireita();
 
@@ -89,8 +92,6 @@ public class AVLTree extends BST {
     }
 
     private No rotacaoEsquerda(No x) {
-        this.totalRotacoes++; // Incrementa o total de rotações feitas
-
         No y = x.getDireita();
         No T2 = y.getEsquerda();
 
